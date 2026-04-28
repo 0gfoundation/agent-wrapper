@@ -1,0 +1,36 @@
+# 演示版：Wrapper + OpenClaw Agent 一起运行
+version: '3.8'
+
+services:
+  # Wrapper 服务
+  wrapper:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - AGENT_URL=http://agent:9000
+    depends_on:
+      - agent
+    networks:
+      - agent-net
+
+  # OpenClaw Agent 服务
+  agent:
+    image: python:3.11-slim
+    working_dir: /app
+    command: >
+      sh -c "
+        pip install --no-cache-dir openclaw==0.1.0 flask &&
+        python main.py
+      "
+    volumes:
+      - ./openclaw-agent:/app
+    expose:
+      - "9000"
+    networks:
+      - agent-net
+
+networks:
+  agent-net:

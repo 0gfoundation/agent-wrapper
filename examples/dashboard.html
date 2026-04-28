@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Agent Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-light: #e0e7ff;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --text: #1f2937;
+  --text-light: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f9fafb;
+  --card-bg: #ffffff;
+  --code-bg: #1f2937;
+}
+body{font-family:'Inter',-apple-system,sans-serif;font-size:14px;line-height:1.6;color:var(--text);background:var(--bg);min-height:100vh}
+:root{--sans:'Inter',-apple-system,sans-serif;--mono:'JetBrains Mono',monospace}
+
+/* Layout */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--card-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh}
+.main{flex:1;margin-left:260px;padding:0}
+
+/* Sidebar */
+.sidebar-header{padding:20px;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+.logo-text{font-size:16px;font-weight:700;color:var(--text)}
+.logo-text span{color:var(--primary)}
+.sidebar-nav{flex:1;padding:16px;overflow-y:auto}
+.nav-section{margin-bottom:20px}
+.nav-section-title{font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;padding-left:12px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--text);text-decoration:none;transition:all 0.15s ease;cursor:pointer;margin-bottom:2px}
+.nav-item:hover{background:var(--bg)}
+.nav-item.active{background:var(--primary-light);color:var(--primary-dark);font-weight:500}
+.nav-item svg{width:18px;height:18px;flex-shrink:0;opacity:0.7}
+.nav-item.active svg{opacity:1}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+
+/* Main Content */
+.header{background:var(--card-bg);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:between;height:64px;position:sticky;top:0;z-index:100}
+.header-content{display:flex;align-items:center;justify-content:space-between;width:100%}
+.page-title{font-size:18px;font-weight:600}
+.page-content{padding:24px}
+
+/* Cards */
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:14px;font-weight:600}
+.card-body{padding:20px}
+
+/* Status Badge */
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.status-badge.healthy{background:#d1fae5;color:#065f46}
+.status-badge.starting{background:#fef3c7;color:#92400e}
+.status-badge.error{background:#fee2e2;color:#991b1b}
+.status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.status-badge.healthy .status-dot{background:#10b981}
+.status-badge.starting .status-dot{background:#f59e0b;animation:pulse 1.5s infinite}
+.status-badge.error .status-dot{background:#ef4444}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* Stats Grid */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px}
+.stat-label{font-size:12px;color:var(--text-light);margin-bottom:4px}
+.stat-value{font-size:24px;font-weight:700;color:var(--text)}
+.stat-change{font-size:12px;margin-top:4px}
+.stat-change.positive{color:var(--success)}
+.stat-change.negative{color:var(--danger)}
+
+/* Info Grid */
+.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.info-item{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.info-item:last-child{border-bottom:none}
+.info-label{font-size:13px;color:var(--text-light)}
+.info-value{font-size:13px;font-family:var(--mono);font-weight:500;color:var(--text)}
+
+/* Chat */
+.chat-container{display:flex;flex-direction:column;height:calc(100vh - 200px)}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+.chat-input-area{padding:16px;border-top:1px solid var(--border);display:flex;gap:12px}
+.chat-input{flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:14px;outline:none;transition:border-color 0.15s}
+.chat-input:focus{border-color:var(--primary)}
+.chat-send{padding:12px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:background 0.15s}
+.chat-send:hover{background:var(--primary-dark)}
+.chat-send:disabled{opacity:0.5;cursor:not-allowed}
+
+.message{display:flex;gap:12px;max-width:80%}
+.message.user{align-self:flex-end;flex-direction:row-reverse}
+.message.assistant{align-self:flex-start}
+.message-avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.message.user .message-avatar{background:var(--primary);color:#fff}
+.message.assistant .message-avatar{background:var(--code-bg);color:#fff}
+.message-content{background:var(--bg);padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.5}
+.message.user .message-content{background:var(--primary-light);color:var(--primary-dark)}
+.message.assistant .message-content{background:var(--card-bg);border:1px solid var(--border)}
+.message-time{font-size:11px;color:var(--text-light);margin-top:4px}
+.message.user .message-time{text-align:right}
+
+/* Logs */
+.log-container{background:var(--code-bg);border-radius:8px;padding:16px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.6;max-height:400px;overflow-y:auto}
+.log-entry{display:flex;gap:8px;margin-bottom:4px}
+.log-time{color:var(--text-light)}
+.log-level{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase}
+.log-level.INFO{background:#3b82f6;color:#fff}
+.log-level.WARN{background:#f59e0b;color:#fff}
+.log-level.ERROR{background:#ef4444;color:#fff}
+.log-message{color:#e5e7eb;flex:1}
+
+/* Config */
+.config-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.config-item{padding:16px;background:var(--bg);border-radius:8px}
+.config-key{font-size:12px;color:var(--text-light);margin-bottom:4px;font-family:var(--mono)}
+.config-value{font-size:14px;font-weight:500;color:var(--text)}
+
+/* Empty State */
+.empty-state{text-align:center;padding:48px 24px;color:var(--text-light)}
+.empty-state-icon{font-size:48px;margin-bottom:16px}
+.empty-state-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px}
+.empty-state-desc{font-size:14px;line-height:1.6}
+
+/* Loading */
+.loading{text-align:center;padding:24px}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Button */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-secondary{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab{padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;font-size:14px;font-weight:500;color:var(--text-light);cursor:pointer;transition:all 0.15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);transition:transform 0.3s;z-index:200}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .info-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">OC</div>
+        <div class="logo-text">OpenClaw<span>Agent</span></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Overview</div>
+        <a class="nav-item active" data-page="overview" onclick="showPage('overview')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          概览
+        </a>
+        <a class="nav-item" data-page="chat" onclick="showPage('chat')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          对话
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Monitoring</div>
+        <a class="nav-item" data-page="logs" onclick="showPage('logs')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          日志
+        </a>
+        <a class="nav-item" data-page="config" onclick="showPage('config')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          配置
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="card" style="margin:0;border:none;background:var(--bg)">
+        <div class="card-body" style="padding:12px">
+          <div style="font-size:12px;color:var(--text-light);margin-bottom:4px">Agent ID</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text);word-break:break-all" id="sidebarAgentId">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <header class="header">
+      <div class="header-content">
+        <div class="page-title" id="pageTitle">概览</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="status-badge healthy" id="statusBadge">
+            <div class="status-dot"></div>
+            <span id="statusText">Running</span>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="refreshData()" title="刷新">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Overview Page -->
+      <div id="page-overview" class="page">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">运行时间</div>
+            <div class="stat-value" id="uptime">—</div>
+            <div class="stat-change positive">自启动以来</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">请求数</div>
+            <div class="stat-value" id="requestCount">—</div>
+            <div class="stat-change positive">总请求</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">框架版本</div>
+            <div class="stat-value" id="frameworkVersion" style="font-size:18px">—</div>
+            <div class="stat-change" id="frameworkName">OpenClaw</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">端口</div>
+            <div class="stat-value" id="agentPort" style="font-size:18px">—</div>
+            <div class="stat-change">HTTP 端口</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Agent 信息</div>
+          </div>
+          <div class="card-body">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Agent ID</span>
+                <span class="info-value" id="agentId">—</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Framework</span>
+                <span class="info-value" id="framework">—</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Version</span>
+                <span class="info-value" id="version">—</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Status</span>
+                <span class="info-value" id="status">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">可用端点</div>
+          </div>
+          <div class="card-body">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">GET /health</span>
+                <span class="info-value"><a href="#" onclick="testEndpoint('health')" style="color:var(--primary)">测试</a></span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">GET /status</span>
+                <span class="info-value"><a href="#" onclick="testEndpoint('status')" style="color:var(--primary)">测试</a></span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">POST /chat</span>
+                <span class="info-value"><a href="#" onclick="showPage('chat')" style="color:var(--primary)">打开</a></span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">POST /generate</span>
+                <span class="info-value"><a href="#" onclick="showPage('chat')" style="color:var(--primary)">打开</a></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Page -->
+      <div id="page-chat" class="page" style="display:none">
+        <div class="card" style="height:calc(100vh - 160px)">
+          <div class="card-header">
+            <div class="card-title">与 Agent 对话</div>
+            <button class="btn btn-secondary btn-sm" onclick="clearChat()">清空对话</button>
+          </div>
+          <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+              <div class="empty-state">
+                <div class="empty-state-icon">💬</div>
+                <div class="empty-state-title">开始对话</div>
+                <div class="empty-state-desc">向 OpenClaw Agent 发送消息开始交互</div>
+              </div>
+            </div>
+            <div class="chat-input-area">
+              <input type="text" class="chat-input" id="chatInput" placeholder="输入消息..." onkeypress="if(event.key==='Enter')sendMessage()">
+              <button class="chat-send" id="sendBtn" onclick="sendMessage()">发送</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logs Page -->
+      <div id="page-logs" class="page" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Agent 日志</div>
+            <div style="display:flex;gap:8px">
+              <select id="logLevel" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px" onchange="filterLogs()">
+                <option value="all">所有级别</option>
+                <option value="INFO">INFO</option>
+                <option value="WARN">WARN</option>
+                <option value="ERROR">ERROR</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" onclick="loadLogs()">刷新</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="log-container" id="logContainer">
+              <div class="empty-state">
+                <div class="empty-state-title">加载中...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config Page -->
+      <div id="page-config" class="page" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Agent 配置</div>
+            <button class="btn btn-secondary btn-sm" onclick="loadConfig()">刷新</button>
+          </div>
+          <div class="card-body" id="configBody">
+            <div class="loading">
+              <div class="spinner"></div>
+              <div>加载配置中...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let agentInfo = null;
+let chatHistory = [];
+let isSending = false;
+
+const API_BASE = window.location.origin;
+
+// ── Page Navigation ────────────────────────────────────────────────────────────
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + pageId).style.display = '';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-page="${pageId}"]`).classList.add('active');
+
+  const titles = {overview: '概览', chat: '对话', logs: '日志', config: '配置'};
+  document.getElementById('pageTitle').textContent = titles[pageId];
+
+  if (pageId === 'logs') loadLogs();
+  if (pageId === 'config') loadConfig();
+}
+
+// ── API Calls ───────────────────────────────────────────────────────────────────
+async function fetchAPI(endpoint, options = {}) {
+  try {
+    const response = await fetch(API_BASE + endpoint, options);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+}
+
+async function loadAgentInfo() {
+  try {
+    const health = await fetchAPI('/health');
+    const status = await fetchAPI('/status');
+    agentInfo = { ...health, ...status };
+    updateUI();
+  } catch (error) {
+    document.getElementById('statusBadge').className = 'status-badge error';
+    document.getElementById('statusText').textContent = 'Offline';
+  }
+}
+
+function updateUI() {
+  if (!agentInfo) return;
+
+  const uptime = agentInfo.uptime || 0;
+  const minutes = Math.floor(uptime / 60);
+  const seconds = Math.floor(uptime % 60);
+  document.getElementById('uptime').textContent = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+  document.getElementById('agentId').textContent = agentInfo.agent_id || 'unknown';
+  document.getElementById('sidebarAgentId').textContent = agentInfo.agent_id || 'unknown';
+  document.getElementById('framework').textContent = agentInfo.framework || 'openclaw';
+  document.getElementById('frameworkName').textContent = agentInfo.framework || 'OpenClaw';
+  document.getElementById('version').textContent = agentInfo.version || 'unknown';
+  document.getElementById('frameworkVersion').textContent = agentInfo.version || '0.1.0';
+  document.getElementById('agentPort').textContent = new URL(window.location).port || '9000';
+  document.getElementById('status').textContent = agentInfo.status || 'running';
+
+  // Request count (mock for now)
+  document.getElementById('requestCount').textContent = Math.floor(Math.random() * 100) + 10;
+}
+
+async function testEndpoint(endpoint) {
+  try {
+    const result = await fetchAPI('/' + endpoint);
+    alert(`端点 /${endpoint} 响应:\n\n${JSON.stringify(result, null, 2)}`);
+  } catch (error) {
+    alert(`端点 /${endpoint} 测试失败: ${error.message}`);
+  }
+}
+
+function refreshData() {
+  loadAgentInfo();
+}
+
+// ── Chat ─────────────────────────────────────────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  if (!message || isSending) return;
+
+  isSending = true;
+  input.value = '';
+  document.getElementById('sendBtn').disabled = true;
+
+  // Add user message
+  addMessage('user', message);
+  chatHistory.push({ role: 'user', content: message });
+
+  try {
+    const response = await fetchAPI('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, session_id: generateSessionId() })
+    });
+
+    addMessage('assistant', response.response || response.text || 'No response');
+    chatHistory.push({ role: 'assistant', content: response.response || response.text });
+  } catch (error) {
+    addMessage('assistant', 'Error: ' + error.message);
+  } finally {
+    isSending = false;
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function addMessage(role, content) {
+  const container = document.getElementById('chatMessages');
+
+  // Remove empty state if exists
+  const emptyState = container.querySelector('.empty-state');
+  if (emptyState) emptyState.remove();
+
+  const msgDiv = document.createElement('div');
+  msgDiv.className = `message ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'message-avatar';
+  avatar.textContent = role === 'user' ? 'U' : 'AI';
+
+  const contentDiv = document.createElement('div');
+  contentDiv.innerHTML = `
+    <div class="message-content">${escapeHtml(content)}</div>
+    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+  `;
+
+  msgDiv.appendChild(avatar);
+  msgDiv.appendChild(contentDiv);
+  container.appendChild(msgDiv);
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function clearChat() {
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-icon">💬</div>
+      <div class="empty-state-title">开始对话</div>
+      <div class="empty-state-desc">向 OpenClaw Agent 发送消息开始交互</div>
+    </div>
+  `;
+  chatHistory = [];
+}
+
+function generateSessionId() {
+  return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+}
+
+// ── Logs ─────────────────────────────────────────────────────────────────────────
+function loadLogs() {
+  const container = document.getElementById('logContainer');
+  // Mock logs for demo
+  const logs = [
+    { time: new Date().toISOString(), level: 'INFO', message: 'Agent started successfully' },
+    { time: new Date(Date.now() - 1000).toISOString(), level: 'INFO', message: 'Framework: OpenClaw v2026.3.20' },
+    { time: new Date(Date.now() - 2000).toISOString(), level: 'INFO', message: 'Listening on port 9000' },
+    { time: new Date(Date.now() - 3000).toISOString(), level: 'WARN', message: 'OpenClaw not installed, running in compatibility mode' },
+  ];
+
+  container.innerHTML = logs.map(log => `
+    <div class="log-entry" data-level="${log.level}">
+      <span class="log-time">${new Date(log.time).toLocaleTimeString()}</span>
+      <span class="log-level ${log.level}">${log.level}</span>
+      <span class="log-message">${escapeHtml(log.message)}</span>
+    </div>
+  `).join('');
+}
+
+function filterLogs() {
+  const level = document.getElementById('logLevel').value;
+  document.querySelectorAll('.log-entry').forEach(entry => {
+    if (level === 'all' || entry.dataset.level === level) {
+      entry.style.display = 'flex';
+    } else {
+      entry.style.display = 'none';
+    }
+  });
+}
+
+// ── Config ───────────────────────────────────────────────────────────────────────
+async function loadConfig() {
+  const body = document.getElementById('configBody');
+  try {
+    const status = await fetchAPI('/status');
+    const config = status.config || {};
+
+    body.innerHTML = `
+      <div class="config-grid">
+        ${Object.entries(config).map(([key, value]) => `
+          <div class="config-item">
+            <div class="config-key">${key}</div>
+            <div class="config-value">${escapeHtml(String(value))}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } catch (error) {
+    body.innerHTML = `<div class="empty-state"><div class="empty-state-title">加载失败</div><div class="empty-state-desc">${error.message}</div></div>`;
+  }
+}
+
+// ── Utilities ────────────────────────────────────────────────────────────────────
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadAgentInfo();
+  setInterval(loadAgentInfo, 10000); // Refresh every 10s
+});
+</script>
+</body>
+</html>

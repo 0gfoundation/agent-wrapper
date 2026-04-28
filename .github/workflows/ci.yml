@@ -1,0 +1,96 @@
+name: Agent Wrapper CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'agent-wrapper/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'agent-wrapper/**'
+
+defaults:
+  run:
+    working-directory: ./agent-wrapper
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: make test
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./agent-wrapper/coverage.out
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: ./agent-wrapper
+          version: latest
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Build
+        run: make build
+
+      - name: Build for Linux
+        run: make build-linux
+
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        working-directory: ./agent-wrapper
+        run: docker build -t 0g-citizen-claw/agent-wrapper:test .

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600">
+  <defs>
+  <style>
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 600; fill: #1e293b; }
+    .section-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; font-weight: 600; fill: #1e293b; }
+    .api-endpoint { font-family: "SF Mono", Monaco, monospace; font-size: 12px; fill: #334155; }
+    .api-response { font-family: "SF Mono", Monaco, monospace; font-size: 11px; fill: #64748b; }
+  <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+  </marker>
+  </style>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.1"/>
+  </filter>
+</defs>
+  <rect width="960" height="600" fill="#ffffff"/>
+  <text x="480" y="40" text-anchor="middle" class="title">API 接口映射</text>
+  <rect x="60" y="80" width="380" height="240" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
+  <text x="250" y="110" text-anchor="middle" class="section-title">区块链 API</text>
+  <rect x="90" y="140" width="320" height="35" rx="6" fill="#ffffff" filter="url(#shadow)"/>
+  <text x="105" y="160" class="api-endpoint">GET /agents/by-seal-id/{sealId}</text>
+  <text x="400" y="160" text-anchor="end" class="api-response">→ {agentId}</text>
+  <rect x="90" y="190" width="320" height="35" rx="6" fill="#ffffff" filter="url(#shadow)"/>
+  <text x="105" y="210" class="api-endpoint">GET /agents/{id}/intelligent-datas</text>
+  <text x="400" y="210" text-anchor="end" class="api-response">→ IntelligentData[]</text>
+  <rect x="90" y="240" width="320" height="35" rx="6" fill="#ffffff" filter="url(#shadow)"/>
+  <text x="105" y="260" class="api-endpoint">GET /agents/{id}/metadata</text>
+  <text x="400" y="260" text-anchor="end" class="api-response">→ AgentMetadata</text>
+  <rect x="520" y="80" width="380" height="140" rx="12" fill="#fffbeb" stroke="#fcd34d" stroke-width="2"/>
+  <text x="710" y="110" text-anchor="middle" class="section-title">Storage API</text>
+  <rect x="550" y="160" width="320" height="35" rx="6" fill="#ffffff" filter="url(#shadow)"/>
+  <text x="565" y="180" class="api-endpoint">GET /config/{hash}</text>
+  <text x="860" y="180" text-anchor="end" class="api-response">→ Encrypted Config</text>
+  <rect x="60" y="360" width="840" height="180" rx="12" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="2"/>
+  <text x="480" y="390" text-anchor="middle" class="section-title">数据流向</text>
+  <rect x="120" y="430" width="160" height="60" rx="8" fill="#3b82f6" filter="url(#shadow)"/>
+  <text x="200.0" y="465" text-anchor="middle" class="section-title" fill="#ffffff" font-size="14px">sealId</text>
+  <rect x="320" y="430" width="160" height="60" rx="8" fill="#3b82f6" filter="url(#shadow)"/>
+  <text x="400.0" y="465" text-anchor="middle" class="section-title" fill="#ffffff" font-size="14px">agentId</text>
+  <rect x="520" y="430" width="160" height="60" rx="8" fill="#3b82f6" filter="url(#shadow)"/>
+  <text x="600.0" y="465" text-anchor="middle" class="section-title" fill="#ffffff" font-size="14px">dataHash[]</text>
+  <rect x="720" y="430" width="160" height="60" rx="8" fill="#3b82f6" filter="url(#shadow)"/>
+  <text x="800.0" y="465" text-anchor="middle" class="section-title" fill="#ffffff" font-size="14px">Config</text>
+  <line x1="280" y1="460.0" x2="320" y2="460.0" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="480" y1="460.0" x2="520" y2="460.0" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="680" y1="460.0" x2="720" y2="460.0" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+</svg>

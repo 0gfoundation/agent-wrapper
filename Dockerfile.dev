@@ -1,0 +1,63 @@
+# Development/Demo Dockerfile for agent-wrapper
+# This includes Python and demo agent for local testing
+
+FROM golang:1.23-bookworm
+
+# Set environment - disable all proxy settings
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GOSUMDB=off
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Disable all proxy settings
+ENV HTTP_PROXY= \
+    HTTPS_PROXY= \
+    http_proxy= \
+    https_proxy= \
+    ALL_PROXY= \
+    all_proxy= \
+    NO_PROXY=*
+
+# Install Python 3 and other tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy source and build
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 go build -o /app/wrapper ./cmd/wrapper
+
+# Copy demo agent
+COPY examples/ /app/examples/
+
+# Make demo agent executable
+RUN chmod +x /app/examples/demo-agent.py
+RUN chmod +x /app/examples/*.sh
+
+# Create working directory for agents
+RUN mkdir -p /app/agent
+
+# Set default environment for demo mode
+ENV DEMO_MODE=true
+ENV PORT=:8080
+ENV AGENT_PORT=:9000
+
+# Disable proxy for runtime (prevents connection issues)
+ENV HTTP_PROXY=
+ENV HTTPS_PROXY=
+ENV http_proxy=
+ENV https_proxy=
+ENV NO_PROXY=*
+
+# Expose ports
+EXPOSE 8080 9000
+
+# Default to demo mode
+CMD ["/app/wrapper"]

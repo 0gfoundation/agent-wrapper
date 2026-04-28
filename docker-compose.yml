@@ -1,0 +1,35 @@
+# Docker Compose for agent-wrapper development
+# This includes mock services and the wrapper in demo mode
+
+services:
+  # Agent Wrapper in Demo Mode
+  agent-wrapper:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: agent-wrapper-demo
+    ports:
+      - "8080:8080"  # Wrapper HTTP API
+      - "9000:9000"  # Demo agent
+    environment:
+      - DEMO_MODE=true
+      - PORT=:8080
+      - AGENT_PORT=9000
+      - LOG_LEVEL=debug
+    volumes:
+      - ./examples:/app/examples:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/_internal/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # Optional: Mock services if needed for testing
+  # Currently the wrapper uses internal mocks, but these
+  # can be used for testing external service integration
+
+networks:
+  default:
+    name: agent-wrapper-network

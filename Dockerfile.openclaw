@@ -1,0 +1,49 @@
+FROM golang:1.23-bookworm
+
+# Disable proxy
+ENV HTTP_PROXY= \
+    HTTPS_PROXY= \
+    http_proxy= \
+    https_proxy= \
+    ALL_PROXY= \
+    all_proxy= \
+    NO_PROXY=*
+
+# Install Python and tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-setuptools \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy and build Go code
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o /app/wrapper ./cmd/wrapper
+
+# Copy examples
+RUN chmod +x /app/examples/*.py /app/examples/*.sh
+
+# Copy and install mock openclaw package
+COPY openclaw-0.1.0-py3-none-any.whl /tmp/
+RUN pip3 install --break-system-packages /tmp/openclaw-0.1.0-py3-none-any.whl
+
+# Verify openclaw is installed
+RUN python3 -c "import openclaw; print(f'OpenClaw version: {openclaw.__version__}')"
+
+# Create working directory
+RUN mkdir -p /app/agent
+
+ENV DEMO_MODE=false
+ENV PORT=:8080
+ENV AGENT_PORT=9000
+
+EXPOSE 8080 9000
+
+CMD ["/app/wrapper"]
