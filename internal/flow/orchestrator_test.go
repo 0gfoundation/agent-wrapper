@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	initpkg "github.com/0g-citizen-claw/agent-wrapper/internal/init"
-	"github.com/0g-citizen-claw/agent-wrapper/internal/sealed"
+	initpkg "github.com/0gfoundation/agent-wrapper/internal/init"
+	"github.com/0gfoundation/agent-wrapper/internal/sealed"
 )
 
 func TestNew(t *testing.T) {

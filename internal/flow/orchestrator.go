@@ -12,14 +12,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/0g-citizen-claw/agent-wrapper/internal/attest"
-	"github.com/0g-citizen-claw/agent-wrapper/internal/blockchain"
-	"github.com/0g-citizen-claw/agent-wrapper/internal/config"
-	"github.com/0g-citizen-claw/agent-wrapper/internal/framework"
-	"github.com/0g-citizen-claw/agent-wrapper/internal/process"
-	"github.com/0g-citizen-claw/agent-wrapper/internal/sealed"
-	"github.com/0g-citizen-claw/agent-wrapper/internal/storage"
-	initpkg "github.com/0g-citizen-claw/agent-wrapper/internal/init"
+	"github.com/0gfoundation/agent-wrapper/internal/attest"
+	"github.com/0gfoundation/agent-wrapper/internal/blockchain"
+	"github.com/0gfoundation/agent-wrapper/internal/config"
+	"github.com/0gfoundation/agent-wrapper/internal/framework"
+	"github.com/0gfoundation/agent-wrapper/internal/process"
+	"github.com/0gfoundation/agent-wrapper/internal/sealed"
+	"github.com/0gfoundation/agent-wrapper/internal/storage"
+	initpkg "github.com/0gfoundation/agent-wrapper/internal/init"
 )
 
 // StatusProvider provides status information about the initialization flow

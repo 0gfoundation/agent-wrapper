@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/0g-citizen-claw/agent-wrapper/internal/config"
+	"github.com/0gfoundation/agent-wrapper/internal/config"
 )
 
 // Manager manages agent processes

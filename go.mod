@@ -1,4 +1,4 @@
-module github.com/0g-citizen-claw/agent-wrapper
+module github.com/0gfoundation/agent-wrapper
 
 go 1.21
 

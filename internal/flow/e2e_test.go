@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	initpkg "github.com/0g-citizen-claw/agent-wrapper/internal/init"
-	"github.com/0g-citizen-claw/agent-wrapper/internal/mock"
-	"github.com/0g-citizen-claw/agent-wrapper/internal/sealed"
+	initpkg "github.com/0gfoundation/agent-wrapper/internal/init"
+	"github.com/0gfoundation/agent-wrapper/internal/mock"
+	"github.com/0gfoundation/agent-wrapper/internal/sealed"
 )
 
 // TestE2E_WithMockServers tests the complete flow with mock servers

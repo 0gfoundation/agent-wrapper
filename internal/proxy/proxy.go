@@ -23,8 +23,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/0g-citizen-claw/agent-wrapper/internal/flow"
-	"github.com/0g-citizen-claw/agent-wrapper/internal/sealed"
+	"github.com/0gfoundation/agent-wrapper/internal/flow"
+	"github.com/0gfoundation/agent-wrapper/internal/sealed"
 )
 
 // Proxy handles HTTP proxying to the agent
